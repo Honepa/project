@@ -16,10 +16,13 @@ void loop()
   for (int i = 0; i < 256; i++)
   {
     analogWrite(pwm, i);
+    delay(20);
   }
+  delay (2000);
   for (int i = 255; i >= 0; i--)
   {
     analogWrite(pwm, i);
+    delay(20);
   }
   delay(50000);
 }
