@@ -1,7 +1,7 @@
 void setup() 
 {
   pinMode(13, OUTPUT);
-  pinMode(8, INPUT_PULLUP);
+  pinMode(8, INPUT);
 
 }
 
