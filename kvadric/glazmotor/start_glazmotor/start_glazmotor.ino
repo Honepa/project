@@ -30,12 +30,31 @@ void loop()
     analogWrite(motor2_pwm, i);
     delay(20);
   }
-  delay (2000);
+  delay (5000);
   for (int i = 255; i >= 0; i--)
   {
     analogWrite(motor1_pwm, i);
     analogWrite(motor2_pwm, i);
     delay(20);
   }
-  delay(50000);
+  digitalWrite(motor1_A, 0);
+  digitalWrite(motor1_B, 1);
+  
+  digitalWrite(motor2_A, 0);
+  digitalWrite(motor2_B, 1);
+  delay(2000);
+    for (int i = 0; i < 256; i++)
+  {
+    analogWrite(motor1_pwm, i);
+    analogWrite(motor2_pwm, i);
+    delay(20);
+  }
+  delay (5000);
+  for (int i = 255; i >= 0; i--)
+  {
+    analogWrite(motor1_pwm, i);
+    analogWrite(motor2_pwm, i);
+    delay(20);
+  }
+  delay(500000);
 }

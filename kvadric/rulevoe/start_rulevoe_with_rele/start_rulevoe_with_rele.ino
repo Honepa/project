@@ -6,74 +6,128 @@
 #define motor2_B 13
 #define motor2_pwm 11
 
-#define RELE_K3 6
-#define RELE_K4 7
-#define KNOK 8
+#define PIN_STR_LFT 6
+#define PIN_STR_RGT 7
+#define PIN_STR_LIM 8
+#define PIN_STR_POS A0
 
-#define INIT 0
-#define GO_LEFT 1
-#define SAVE_R1 2
-#define GO_RIGHT1 3
-#define GO_RIGHT2 4
-#define SAVE_R2 5
-#define GO_MIDDLE1 6
-#define GO_MIDDLE2 7
-#define FAIL 8
-#define WORK 9
+#define ST_STR_INIT       0
+#define ST_STR_RIGHT      1
+#define ST_STR_SAVE_R1    2
+#define ST_STR_LEFT1      3
+#define ST_STR_LEFT2      4
+#define ST_STR_SAVE_R2    5
+#define ST_STR_GO_MIDDLE1 6
+#define ST_STR_GO_MIDDLE2 7
+#define ST_STR_FAIL       8
+#define ST_WORK           9
 
-#define TRON   0
-#define EHAT_1 1
-#define POWOROT 2
-#define PRYAMO 3
-#define EHAT_2 4
-#define STOP 5
+#define ST_WRK_TRON    0
+#define ST_WRK_EHAT_1  1
+#define ST_WRK_POWOROT 2
+#define ST_WRK_PRYAMO  3
+#define ST_WRK_EHAT_2  4
+#define ST_WRK_STOP    5
+#define SR_WRK_FAIL    6
 
-void s_println(int n_args, ...)
+void str_stop()
 {
-  va_list ap;
-  va_start(ap, n_args);
-  for (int i = 1; i < n_args; i++)
+  digitalWrite(PIN_STR_LFT, 0);
+  digitalWrite(PIN_STR_RGT, 0);
+}
+
+void str_right()
+{
+  digitalWrite(PIN_STR_LFT, 1);
+  digitalWrite(PIN_STR_RGT, 0);
+}
+
+void str_left()
+{
+  digitalWrite(PIN_STR_LFT, 0);
+  digitalWrite(PIN_STR_RGT, 1);
+}
+
+long get_str_pos()
+{
+  long p = 0;
+  for (int i = 0; i < 100; i++)
   {
-    Serial.print(va_arg(ap, int));
-    Serial.print(", ");
+    p += analogRead(PIN_STR_POS);
   }
-  Serial.print(va_arg(ap, int));
-  Serial.print("\n");
-  va_end(ap);
-}
-  
-int stop_motor()
-{
-  digitalWrite(RELE_K4, 1);
-  digitalWrite(RELE_K3, 1);
+  return p / 100;
 }
 
-int go_left()
+int is_str_limit()
 {
-  digitalWrite(RELE_K4, 0);
-  digitalWrite(RELE_K3, 1);
+  int p = 0;
+  for (int i = 0; i < 100; i++)
+  {
+    p += digitalRead(PIN_STR_LIM);
+  }
+  return p > 80;
 }
 
-int go_right()
+void start_bc_motors()
 {
-  digitalWrite(RELE_K4, 1);
-  digitalWrite(RELE_K3, 0);
+  digitalWrite(motor1_A, 1);
+  digitalWrite(motor1_B, 0);
+
+  digitalWrite(motor2_A, 1);
+  digitalWrite(motor2_B, 0);
+  for (int i = 0; i < 256; i++)
+  {
+    analogWrite(motor1_pwm, i);
+    analogWrite(motor2_pwm, i);
+    delay(20);
+  }
 }
 
-int knokRead()
+void stop_bc_motors()
 {
-  int k = 0;
-  for (int j = 0; j < 5000; j++) k += digitalRead(KNOK);
-  return k > 4900;
+  for (int i = 255; i >= 0; i--)
+  {
+    analogWrite(motor1_pwm, i);
+    analogWrite(motor2_pwm, i);
+    delay(20);
+  }
+  digitalWrite(motor1_A, 0);
+  digitalWrite(motor1_B, 0);
+
+  digitalWrite(motor2_A, 0);
+  digitalWrite(motor2_B, 0);
+}
+
+void s_println()
+{
+  String tsate[8] = {"INIT", "RIGHT", "SR1", "L1", "L2", "SR2", "M1", "M2"};
+  Serial.print(str_pos);  Serial.print('\t');
+  Serial.print(is_limit); Serial.print('\t');
+  Serial.print(R1);       Serial.print('\t');
+  Serial.print(R2);       Serial.print('\t');
+  Serial.print(t);        Serial.print('\t');
+  Serial.print(tsate[state]);
+  Serial.print('\n');
+}
+
+void ss_println()
+{
+  Serial.print("pos");      Serial.print('\t');
+  Serial.print("limit");    Serial.print('\t');
+  Serial.print("R1");       Serial.print('\t');
+  Serial.print("R2");       Serial.print('\t');
+  Serial.print("t");        Serial.print('\t');
+  Serial.print("state");    Serial.print('\n');
 }
 
 void setup()
 {
+  pinMode(6, 1);
+  pinMode(7, 1);
+  pinMode(8, 0);
   Serial.begin(9600);
-  pinMode(RELE_K4, OUTPUT);
-  pinMode(RELE_K3, OUTPUT);
-  pinMode(KNOK, INPUT);
-  stop_motor();
+  ss_println();
+  str_stop();
 
   pinMode(4, OUTPUT);
   pinMode(5, OUTPUT);
@@ -83,167 +137,198 @@ void setup()
   pinMode(12, OUTPUT);
   pinMode(11, OUTPUT);
 }
-int state = 0;
+
+int state = ST_STR_INIT;
 int work_state = 0;
-int R1, R2, R, my_R = 0;
-int Tt, t, t0, t1, dt;
+long t  = 0;
+long R1 = 0;
+long R2 = 0;
+int is_limit = 0;
+int str_pos = 0;
 
 void loop()
 {
-  s_println(4, R1, R2, R, analogRead(A0));
+  is_limit = is_str_limit();
+  str_pos = get_str_pos() - R1 - R2 / 2;
+  if (state != ST_STR_FAIL) s_println();
   switch (state)
   {
-    case INIT:
-      state = GO_LEFT;
-      t = millis();
-      Serial.println("INIT");
-      break;
 
-    case GO_LEFT:
-      Serial.println("GO_LEFT");
-      if (knokRead())
+    case ST_STR_INIT:
+      t = millis();
+      state = ST_STR_RIGHT;
+      break;
+    case ST_STR_RIGHT:
+      if (! is_limit)
       {
-        state = SAVE_R1;
+        if (millis() - t > 2500)
+        {
+          state = ST_STR_FAIL;
+        }
+        str_right();
       }
       else
       {
-        go_left();
+        t = millis();
+        state = ST_STR_SAVE_R1;
       }
       break;
-
-    case SAVE_R1:
-      Serial.println("SEVE_R1");
-      R1 = analogRead(A0);
-      stop_motor();
-      state = GO_RIGHT1;
-      break;
-
-    case GO_RIGHT1:
-      Serial.println("GO_RIGHT1");
-      go_right();
-      if (!knokRead())
+    case ST_STR_SAVE_R1:
+      str_stop();
+      if (millis() - t > 100)
       {
-        state = GO_RIGHT2;
+        R1 = str_pos;
+        t = millis();
+        state = ST_STR_LEFT1;
       }
       break;
-
-    case GO_RIGHT2:
-      Serial.println("GO_RIGHT2");
-      go_right();
-      if (knokRead())
+    case ST_STR_LEFT1:
+      if (is_limit)
       {
-
-        state = SAVE_R2;
-      }
-      break;
-
-    case SAVE_R2:
-      Serial.println("SAVE_R2");
-      R2 = analogRead(A0);
-      t0 = millis();
-      dt = t - t0;
-      Tt = (dt / 100) * 10;
-      R = (R1 + R2) / 2;
-      stop_motor();
-      state = GO_MIDDLE1;
-      break;
-
-    case GO_MIDDLE1:
-      Serial.println("GO_MIDDLE1");
-      go_left();
-      if (!knokRead())
+        if (millis() - t > 100)
+        {
+          state = ST_STR_FAIL;
+        }
+        str_left();
+      } else
       {
-        state = GO_MIDDLE2;
+        state = ST_STR_LEFT2;
       }
       break;
-
-    case GO_MIDDLE2:
-      
-      go_left();
-
-      if (abs(analogRead(A0) - R) < 2)
+    case ST_STR_LEFT2:
+      if (!is_limit)
       {
-        state = WORK;
-      }
-      else if (knokRead())
+        if (millis() - t > 2500)
+        {
+          state = ST_STR_FAIL;
+        }
+        str_left();
+      } else if (is_limit)
       {
-        state = FAIL;
-      }
-      else if ((millis() - t0) > dt + Tt)
-      {
-        state = FAIL;
+        t = millis();
+        state = ST_STR_SAVE_R2;
       }
       break;
-
-    case FAIL:
-      Serial.println("FAIL");
-      stop_motor();
+    case ST_STR_SAVE_R2:
+      str_stop();
+      if (millis() - t > 100)
+      {
+        R2 = str_pos;
+        t = millis();
+        state = ST_STR_GO_MIDDLE1;
+      }
+      break;
+    case ST_STR_GO_MIDDLE1:
+      if (is_limit)
+      {
+        if (millis() - t > 200)
+        {
+          state = ST_STR_FAIL;
+        }
+        str_right();
+      }
+      else
+      {
+        t = millis();
+        state = ST_STR_GO_MIDDLE2;
+      }
+      break;
+    case ST_STR_GO_MIDDLE2:
+      if (! is_limit)
+      {
+        if (millis() - t > 2500)
+        {
+          state = ST_STR_FAIL;
+        }
+        str_right();
+      }
+      else
+      {
+        state = ST_STR_FAIL;
+      }
+      if (str_pos < 0)
+      {
+        state = ST_WORK;
+      }
+      break;
+    case ST_STR_FAIL:
+      str_stop();
       break;
 
-    case WORK:
+    case ST_WORK:
       Serial.println(work_state);
       switch (work_state)
       {
-        case TRON:
-          digitalWrite(motor1_A, 1);
-          digitalWrite(motor1_B, 0);
-
-          digitalWrite(motor2_A, 1);
-          digitalWrite(motor2_B, 0);
-          for (int i = 0; i < 256; i++)
-          {
-            analogWrite(motor1_pwm, i);
-            analogWrite(motor2_pwm, i);
-            delay(20);
-          }
-          t0 = millis();
-          work_state = EHAT_1;
+        case ST_WRK_TRON:
+          start_bc_motors();
+          t = millis();
+          work_state = ST_WRK_EHAT_1;
           break;
 
-        case EHAT_1:
-          if (millis() - t0  >= 2000)
+        case ST_WRK_EHAT_1:
+          if (millis() - t  >= 2000)
           {
-            work_state = POWOROT;
+            t = millis();
+            work_state = ST_WRK_POWOROT;
           }
           break;
 
-        case POWOROT:
-          my_R = (R2 + R) / 2;
-          go_right();
-          if (abs(analogRead(A0) - my_R) < 2)
+        case ST_WRK_POWOROT:
+          if (! is_limit)
           {
-            work_state = PRYAMO;
+            if (millis() - t > 2000)
+            {
+              work_state = ST_WRK_FAIL;
+            }
+            str_right();
+          }
+          else
+          {
+            work_state = ST_WRK_FAIL;
+          }
+          if ()
+          {
+            //написать функцию для поворота
+            t = millis();
+            work_state = ST_WRK_PRYAMO;
           }
           break;
 
-        case PRYAMO:
-          if (abs(analogRead(A0) - R) < 2)
+        case ST_WRK_PRYAMO:
+          if (! is_limit)
           {
-            work_state = EHAT_2;
-            t0 = millis();
+            if (millis() - t > 2000)
+            {
+              work_state = ST_WRK_FAIL;
+            }
+            str_left();
           }
-
+          else
+          {
+            work_state = ST_WRK_FAIL;
+          }
+          if ()
+          {
+            //написать функцию для поворота
+            t = millis();
+            work_state = ST_WRK_EHAT_2;
+          }
           break;
 
-        case EHAT_2:
-          if (millis() - t0 >= 3000)
+        case ST_WRK_EHAT_2:
+          if (millis() - t >= 3000)
           {
-            work_state = STOP;
+            work_state = ST_WRK_STOP;
           }
           break;
 
-        case STOP:
-          for (int i = 255; i >= 0; i--)
-          {
-            analogWrite(motor1_pwm, i);
-            analogWrite(motor2_pwm, i);
-            delay(20);
-          }
-          digitalWrite(motor1_A, 0);
-          digitalWrite(motor1_B, 0);
+        case ST_WRK_STOP:
+          stop_bc_motors();
+          break;
 
-          digitalWrite(motor2_A, 0);
-          digitalWrite(motor2_B, 0);
+        case ST_WRK_FAIL:
+          str_stop();
+          stop_bc_motoros();
           break;
       }
       break;
