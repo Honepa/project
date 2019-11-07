@@ -20,7 +20,8 @@
 #define ST_STR_GO_MIDDLE1 6
 #define ST_STR_GO_MIDDLE2 7
 #define ST_STR_FAIL       8
-#define ST_WORK           9
+#define ST_STR_WORK       9
+#define ST_WORK           10
 
 #define ST_WRK_TRON    0
 #define ST_WRK_EHAT_1  1
@@ -28,7 +29,7 @@
 #define ST_WRK_PRYAMO  3
 #define ST_WRK_EHAT_2  4
 #define ST_WRK_STOP    5
-#define SR_WRK_FAIL    6
+#define ST_WRK_FAIL    6
 
 void str_stop()
 {
@@ -98,36 +99,14 @@ void stop_bc_motors()
   digitalWrite(motor2_B, 0);
 }
 
-void s_println()
-{
-  String tsate[8] = {"INIT", "RIGHT", "SR1", "L1", "L2", "SR2", "M1", "M2"};
-  Serial.print(str_pos);  Serial.print('\t');
-  Serial.print(is_limit); Serial.print('\t');
-  Serial.print(R1);       Serial.print('\t');
-  Serial.print(R2);       Serial.print('\t');
-  Serial.print(t);        Serial.print('\t');
-  Serial.print(tsate[state]);
-  Serial.print('\n');
-}
-
-void ss_println()
-{
-  Serial.print("pos");      Serial.print('\t');
-  Serial.print("limit");    Serial.print('\t');
-  Serial.print("R1");       Serial.print('\t');
-  Serial.print("R2");       Serial.print('\t');
-  Serial.print("t");        Serial.print('\t');
-  Serial.print("state");    Serial.print('\n');
-}
-
 void setup()
 {
   pinMode(6, 1);
   pinMode(7, 1);
   pinMode(8, 0);
   Serial.begin(9600);
-  ss_println();
   str_stop();
+  ss_println();
 
   pinMode(4, OUTPUT);
   pinMode(5, OUTPUT);
@@ -145,6 +124,76 @@ long R1 = 0;
 long R2 = 0;
 int is_limit = 0;
 int str_pos = 0;
+int my_R, my_R1, my_R2;
+
+int set_str_pos(int pos)
+{
+  int fff = 0;
+  if (! is_limit)
+  {
+    if (millis() - t > 5000)
+    {
+      fff = 2;
+    }
+
+    if (abs(pos - str_pos) > 2)
+    {
+      if (pos > 0)
+      {
+        if (pos - str_pos > 0 )
+        {
+          str_left();
+          fff = 0;
+        }
+      }
+      else if (pos < 0)
+      {
+        if (pos - str_pos < 0)
+        {
+          str_right();
+          fff = 0;
+        }
+      }
+
+    }
+    else
+    {
+      fff = 1;
+    }
+  }
+  else
+  {
+    fff = 2;
+  }
+  return (fff);
+}
+
+void s_println()
+{
+  String tsate[11] = {"INIT", "RIGHT", "SR1", "L1", "L2", "SR2", "M1", "M2", "F", "STRWORK", "WORK"};
+  String wstate[7] = {"TRON", "EHAT_1", "POWOROT", "PRYAMO", "EHAT_2", "STOP", "F"};
+  Serial.print(str_pos);        Serial.print('\t');
+  Serial.print(is_limit);       Serial.print('\t');
+  Serial.print(R1);             Serial.print('\t');
+  Serial.print(R2);             Serial.print('\t');
+  Serial.print(t);              Serial.print('\t');
+  Serial.print(tsate[state]);   Serial.print('\t');
+  Serial.print(wstate[work_state]); Serial.print('\t');
+  Serial.print(str_pos);
+  Serial.print('\n');
+}
+
+void ss_println()
+{
+  Serial.print("pos");         Serial.print('\t');
+  Serial.print("limit");       Serial.print('\t');
+  Serial.print("R1");          Serial.print('\t');
+  Serial.print("R2");          Serial.print('\t');
+  Serial.print("t");           Serial.print('\t');
+  Serial.print("state");       Serial.print('\t');
+  Serial.print("work_state");  Serial.print('\t');
+  Serial.print("str_pos");     Serial.print('\n');
+}
 
 void loop()
 {
@@ -175,9 +224,10 @@ void loop()
       break;
     case ST_STR_SAVE_R1:
       str_stop();
-      if (millis() - t > 100)
+      if (millis() - t > 1000)
       {
         R1 = str_pos;
+        my_R1 = analogRead(A0);
         t = millis();
         state = ST_STR_LEFT1;
       }
@@ -185,7 +235,7 @@ void loop()
     case ST_STR_LEFT1:
       if (is_limit)
       {
-        if (millis() - t > 100)
+        if (millis() - t > 1000)
         {
           state = ST_STR_FAIL;
         }
@@ -211,9 +261,10 @@ void loop()
       break;
     case ST_STR_SAVE_R2:
       str_stop();
-      if (millis() - t > 100)
+      if (millis() - t > 1100)
       {
         R2 = str_pos;
+        my_R2 = analogRead(A0);
         t = millis();
         state = ST_STR_GO_MIDDLE1;
       }
@@ -246,21 +297,23 @@ void loop()
       {
         state = ST_STR_FAIL;
       }
-      if (str_pos < 0)
+      if (str_pos <= 0)
       {
-        state = ST_WORK;
+        state = ST_STR_WORK;
       }
       break;
     case ST_STR_FAIL:
       str_stop();
       break;
-
+    case ST_STR_WORK:
+      str_stop();
+      state = ST_WORK;
+      break;
     case ST_WORK:
-      Serial.println(work_state);
       switch (work_state)
       {
         case ST_WRK_TRON:
-          start_bc_motors();
+          //start_bc_motors();
           t = millis();
           work_state = ST_WRK_EHAT_1;
           break;
@@ -274,11 +327,27 @@ void loop()
           break;
 
         case ST_WRK_POWOROT:
+          int f = set_str_pos(-40);
+          if ( f == 1)
+          {
+            str_stop();
+            t = millis();
+            work_state = ST_WRK_PRYAMO;
+
+          }
+          else if ( f == 2 )
+          {
+            str_stop();
+            work_state = ST_WRK_FAIL;
+          }
+          break;
+
+        case ST_WRK_PRYAMO:
           if (! is_limit)
           {
-            if (millis() - t > 2000)
+            if (millis() - t > 2500)
             {
-              work_state = ST_WRK_FAIL;
+              work_state = ST_STR_FAIL;
             }
             str_right();
           }
@@ -286,37 +355,14 @@ void loop()
           {
             work_state = ST_WRK_FAIL;
           }
-          if ()
+          if (str_pos <= 0)
           {
-            //написать функцию для поворота
-            t = millis();
-            work_state = ST_WRK_PRYAMO;
-          }
-          break;
-
-        case ST_WRK_PRYAMO:
-          if (! is_limit)
-          {
-            if (millis() - t > 2000)
-            {
-              work_state = ST_WRK_FAIL;
-            }
-            str_left();
-          }
-          else
-          {
-            work_state = ST_WRK_FAIL;
-          }
-          if ()
-          {
-            //написать функцию для поворота
-            t = millis();
             work_state = ST_WRK_EHAT_2;
           }
           break;
 
         case ST_WRK_EHAT_2:
-          if (millis() - t >= 3000)
+          if (millis() - t >= 500)
           {
             work_state = ST_WRK_STOP;
           }
@@ -324,11 +370,12 @@ void loop()
 
         case ST_WRK_STOP:
           stop_bc_motors();
+          str_stop();
           break;
 
         case ST_WRK_FAIL:
           str_stop();
-          stop_bc_motoros();
+          stop_bc_motors();
           break;
       }
       break;
