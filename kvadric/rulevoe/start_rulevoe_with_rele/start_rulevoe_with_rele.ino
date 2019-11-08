@@ -1,3 +1,4 @@
+//танцует, не включать!!!!!!
 #define motor1_A 4
 #define motor1_B 5
 #define motor1_pwm 3
@@ -115,6 +116,9 @@ void setup()
   pinMode(13, OUTPUT);
   pinMode(12, OUTPUT);
   pinMode(11, OUTPUT);
+
+  pinMode(2, OUTPUT);
+  pinMode(9, OUTPUT);
 }
 
 int state = ST_STR_INIT;
@@ -136,7 +140,7 @@ int set_str_pos(int pos)
       fff = 2;
     }
 
-    if (abs(pos - str_pos) > 2)
+    if (abs(pos - str_pos) > 10)
     {
       if (pos > 0)
       {
@@ -163,7 +167,7 @@ int set_str_pos(int pos)
   }
   else
   {
-    fff = 2;
+    fff = 3;
   }
   return (fff);
 }
@@ -177,8 +181,8 @@ void s_println()
   Serial.print(R1);             Serial.print('\t');
   Serial.print(R2);             Serial.print('\t');
   Serial.print(t);              Serial.print('\t');
-  Serial.print(tsate[state]);   Serial.print('\t');
-  Serial.print(wstate[work_state]); Serial.print('\t');
+  Serial.print(state);          Serial.print('\t');
+  Serial.print(work_state);     Serial.print('\t');
   Serial.print(str_pos);
   Serial.print('\n');
 }
@@ -199,7 +203,7 @@ void loop()
 {
   is_limit = is_str_limit();
   str_pos = get_str_pos() - R1 - R2 / 2;
-  if (state != ST_STR_FAIL) s_println();
+  s_println();
   switch (state)
   {
 
@@ -312,6 +316,31 @@ void loop()
     case ST_WORK:
       switch (work_state)
       {
+        case ST_WRK_PRYAMO:
+          //work_state = ST_WRK_STOP;
+          //digitalWrite(2, 0);
+          //digitalWrite(9, 0);
+          if (! is_limit)
+          {
+            if (millis() - t > 2500)
+            {
+              work_state = ST_STR_FAIL;
+            }
+            if (str_pos >= 0)
+            {
+              str_right();
+            }
+            else if (str_pos <= 0)
+            {
+              str_left();
+            }
+            else
+            {
+              work_state = ST_WRK_EHAT_2;
+            }
+          }
+          break;
+          
         case ST_WRK_TRON:
           //start_bc_motors();
           t = millis();
@@ -328,7 +357,7 @@ void loop()
 
         case ST_WRK_POWOROT:
           int f = set_str_pos(-40);
-          if ( f == 1)
+          if (f == 1)
           {
             str_stop();
             t = millis();
@@ -340,26 +369,14 @@ void loop()
             str_stop();
             work_state = ST_WRK_FAIL;
           }
-          break;
-
-        case ST_WRK_PRYAMO:
-          if (! is_limit)
+          else if ( f == 3 )
           {
-            if (millis() - t > 2500)
-            {
-              work_state = ST_STR_FAIL;
-            }
-            str_right();
-          }
-          else
-          {
+            str_stop();
             work_state = ST_WRK_FAIL;
           }
-          if (str_pos <= 0)
-          {
-            work_state = ST_WRK_EHAT_2;
-          }
           break;
+
+        
 
         case ST_WRK_EHAT_2:
           if (millis() - t >= 500)
