@@ -1,28 +1,40 @@
 #include <Wire.h>
 #include <math.h>
 
+#define INIT 0
+#define WORK 1
+
 uint8_t IMUAddress = 0x68;
 /* IMU Data */
 int16_t accX;
 int16_t accY;
 int16_t accZ;
 int16_t tempRaw;
+int k = 1;
+int k1 = 1;
 int16_t gyroX;
 int16_t gyroY;
 int16_t gyroZ;
 
+long t = 0;
+int koor[6];
+double S_z, A_z = 0;
+double in_z = 0;
+double dt = 0.01;
+int n = 10;
+
+double c = 0;
+double dg = 0;
 void setup()
 {
   Wire.begin();
   Serial.begin(9600);
   i2cWrite(0x6B, 0x00);
+  t = millis();
 }
-long t = 0;
-int koor[6];
 
 int read_kompas()
 {
-  
   int bytes[14];
   int nbytes = 14;
   Wire.beginTransmission(IMUAddress);
@@ -30,9 +42,9 @@ int read_kompas()
   Wire.endTransmission(false);
   Wire.requestFrom(IMUAddress, nbytes);
   for (uint8_t i = 0; i < nbytes; i++)
-  {    
+  {
     bytes[i] = Wire.read();
-  }  
+  }
   accX = bytes[0];
   accX = accX << 8;
   accX = accX | bytes[1];
@@ -68,57 +80,49 @@ int read_kompas()
   koor[4] = gyroX;
   koor[5] = gyroY;
   koor[6] = gyroZ;
-  /*
-  Serial.print(" ");
-  Serial.print("accX:");
-  Serial.print(accX);
-  Serial.print(" ");
-  Serial.print("accY:");
-  Serial.print(accY);
-  Serial.print(" ");
-  Serial.print("accZ:");
-  Serial.print(accZ);
-  Serial.print(" ");
-  Serial.print("tempRaw");
-  Serial.print(tempRaw);
-  Serial.print(" ");
-  Serial.print("X:");
-  Serial.print(gyroX);
-  Serial.print(" ");
-  Serial.print("Y:");
-  Serial.print(gyroY);
-  Serial.print(" ");
-  Serial.print("Z:");
-  Serial.print(gyroZ);
-  Serial.println(" ");
-  */
   return koor;
 }
 
+double A_z_0 = 0;
+int state = 0;
 
 void loop()
 {
   read_kompas();
-  /*for (int i = 0; i < 7; i++)
+  switch (state)
   {
-    Serial.print(koor[i]);
-    Serial.print("  ");
+    case INIT:
+      {
+        if (millis() - t > 10000)
+        {
+          c = - in_z / 100;
+          state = WORK;
+        }
+        else
+        {
+          in_z = in_z + koor[6] * dt;
+        }
+        break;
+      }
+    case WORK:
+      {
+        in_z = in_z + koor[6] * dt + c;
+        S_z = S_z + in_z - A_z;
+        A_z = S_z / n;
+        dg = -0.079 * A_z - 28.5281;
+        Serial.print(in_z);
+        Serial.print(" ");
+        Serial.print(c);
+        Serial.print(" ");
+        Serial.print(A_z);
+        Serial.print(" ");
+        Serial.print(dg);
+        Serial.println(" ");
+        A_z_0 = A_z;
+        break;
+      }
   }
-  Serial.println(" ");
-   */
-  double accYangle = (atan2(koor[0],koor[2])+PI)*RAD_TO_DEG;
-  double accXangle = (atan2(koor[1],koor[2])+PI)*RAD_TO_DEG;  
-  double gyroXrate = (double)koor[4]/131.0;
-  double gyroYrate = -((double)koor[5]/131.0);
-  Serial.print("x:");
-  Serial.print(" ");
-  Serial.print(gyroXrate);
-  Serial.print("  ");
-  Serial.print("y:");
-  Serial.print(" ");
-  Serial.print(gyroYrate);
-  Serial.println(" ");
-  delay(500);
+  delay(100);
 }
 
 
