@@ -66,18 +66,24 @@ void setup()
 
 void loop()
 {
-  //Serial.println(state);
+  Serial.print(state);
+  Serial.print("\t");
+  Serial.print(str_state);
+  Serial.print("\n");
+  is_limit = is_str_limit;
+  str_pos = get_str_pos() - R1 - R2 / 2;
   read_kompas();
   switch (state)
   {
     case INIT:
       {
-        int f = str_init();
+        int f = 1;
         if (f == 1)
         {
           if (millis() - t > 10000)
           {
             c = - in_z / 100;
+            t = millis();
             state = WORK;
           }
           else
@@ -93,35 +99,42 @@ void loop()
       }
     case WORK:
       {
+        if ( millis - t < 6000)
+        {
         in_z = in_z + koor[6] * dt + c;
         S_z = S_z + in_z - A_z;
         A_z = S_z / n;
         dg = -0.079 * A_z - 28.5281;
         if (dg > 2)
         {
-          str_right();
-          int l = 1;
+          if (!is_limit)
+          {
+            str_left();
+          }
+          else 
+          {
+            str_stop();
+          }
         }
-        else if (dg  < 2)
+        else if ( dg < 2)
         {
-          str_left();
-          int l = 1;
+          if (!is_limit)
+          {
+            str_right();
+          }
+          else 
+          {
+            str_stop();
+          }
         }
         else
         {
-          if (l == 1)
-          {
-            int j = set_str_pos(0);
-            if (j = 1)
-            {
-              str_stop();
-
-            }
-            else if (j == 2 or j == 3)
-            {
-              state = FAIL;
-            }
-          }
+          str_stop();
+        }
+        }
+        else
+        {
+          state = FAIL;
         }
         break;
       }
@@ -239,7 +252,7 @@ int str_init()
     case ST_STR_RIGHT:
       if (! is_limit)
       {
-        if (millis() - t > 2500)
+        if (millis() - t > 3500)
         {
           str_state = ST_STR_FAIL;
         }
@@ -342,6 +355,7 @@ int str_init()
       break;
     case ST_STR_WORK:
       str_stop();
+      t = millis();
       code = 1;
       break;
   }
