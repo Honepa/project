@@ -143,7 +143,7 @@ void loop()
         break;
       }
   }
-
+ 
 }
 
 int read_kompas()

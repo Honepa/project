@@ -32,10 +32,11 @@ int16_t gyroY;
 int16_t gyroZ;
 
 int k, k1 = 1;
-
+long t0 = 0;
 int koor[6];
 double c, dg, DG, e, A, S_z, A_z, in_z, A_Z_0, k2 = 0;
-double dt = 0.0016;
+//double dt = 0.0016;
+double dt = 0.01;
 int n = 10;
 int is_limit_left, is_limit_right, R1, R2, str_pos, old_str_pos = 0;
 int str_state, state = 0;
@@ -44,14 +45,15 @@ long t = 0;
 
 void setup()
 {
-  Serial.begin(115200);
+  Serial.begin(9600);
   pinMode(6, 1);
   pinMode(7, 1);
   pinMode(8, 0);
   pinMode(3, 0);
   t = millis();
+  t0 = millis();
   str_stop();
-
+  
   Wire.begin();
   i2cWrite(0x6B, 0x00);
   Serial.print("in_z");
@@ -67,6 +69,8 @@ void setup()
 float d_in_z, iiii = 0;
 void loop()
 {
+  int sturn = 0;
+  Serial.println(str_state);
   // Serial.print(c);
   //erial.print(" ");
   //Serial.print(dg);
@@ -79,10 +83,14 @@ void loop()
   {
     case INIT:
       {
-        int sturn = str_init();
+        //Serial.println(t);
+        if (millis() - t > 10000)
+        {
+          
+        Serial.println(millis());
         if (sturn == 1)
         {
-          t = millis();
+          //t = millis();
           state = INIT_KOMPAS;
         }
         else if (sturn == 2)
@@ -90,23 +98,34 @@ void loop()
 
           state = STOP;
         }
+        }
+        else
+        {
+          sturn = str_init();
+        in_z = in_z + koor[6] * dt;
+          Serial.println("5456");
+        
+        
+        }
         break;
       }
     case INIT_KOMPAS:
       {
-        if (iiii++ > 1000)
+        c = -in_z / 100;      
+        state = WORK;
+        /*if (millis() - t > 10000)
         {
-          c = -in_z / 1000;
-          in_z = 0;
+          c = -in_z / 100;
+          //in_z = 0;
           iiii = 0;
-          dt =  0.0128;
-          
+          //dt =  0.0128;
+           // t = millis();
           state = WORK;
         }
         else
         {
           in_z = in_z + koor[6] * dt;
-        }
+        } */
         break;
       }
     case WORK:
@@ -115,13 +134,13 @@ void loop()
         S_z = S_z + in_z - A_z;
         A_z = S_z / n;
         dg = -0.079 * A_z - 28.5281;
-        e = DG - dg;
-        A = k2 * e;
-        iiii++;
-        if (millis() - t > 500)
-        {
-          Serial.print(iiii);
-          Serial.print(" ");
+        //e = DG - dg;
+        //A = k2 * e;
+        //iiii++;
+        //if (millis() - t > 500)
+        //{
+          //Serial.print(iiii);
+          //Serial.print(" ");
           Serial.print(in_z);
           Serial.print(" ");
           Serial.print(c);
@@ -129,9 +148,11 @@ void loop()
           Serial.print(A_z);
           Serial.print(" ");
           Serial.print(dg);
+          Serial.print(" ");
+          Serial.print(koor[6]);
           Serial.println(" ");
-          t = millis();
-        }
+          //t = millis();
+       // }
         /*
           if (str_pos > A - 2)
           {
@@ -147,12 +168,13 @@ void loop()
           } */
         break;
       }
-    case STOP:
-      {
-        str_stop();
-        break;
-      }
+    //case STOP:
+      //{
+        //str_stop();
+        //break;
+      //}
   }
+  delay(100);
 }
 
 void i2cWrite(uint8_t registerAddress, uint8_t data)
