@@ -117,6 +117,8 @@ void loop()
         Serial.print(A_z);
         Serial.print(" ");
         Serial.print(dg);
+        Serial.print(" ");
+        Serial.print(koor[6]);
         Serial.println(" ");
         A_z_0 = A_z;
         break;
