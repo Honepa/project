@@ -5,6 +5,7 @@
 #define INIT        1
 #define WORK        2
 #define STOP        3
+#define FAIL        4
 
 #define PIN_STR_LFT       6
 #define PIN_STR_RGT       7
@@ -131,7 +132,7 @@ void loop()
       {
         if (millis() - t > 10000)
         {
-          c = -in_Z / 100;
+          c = -in_z / 100;
           state = INIT;
         }
         else
@@ -178,7 +179,7 @@ void loop()
         Serial.print(A);
         Serial.println(" ");
         break;
-        f (str_pos > A - 20)
+        if (str_pos > A - 20)
         {
           Serial.println("left");
         }
@@ -194,6 +195,10 @@ void loop()
         break;
       }
     case FAIL:
+    {
+      str_stop();
+      break;
+    }
   }
 
 }

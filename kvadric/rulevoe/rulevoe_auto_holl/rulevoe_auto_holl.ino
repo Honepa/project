@@ -46,6 +46,12 @@ void loop()
   Serial.print(is_lim_right);
   Serial.print(" ");
   Serial.print(is_lim_left);
+  Serial.print(" ");
+  Serial.print(str_pos);
+  Serial.print(" ");
+  Serial.print(digitalRead(8));
+  Serial.print(" ");
+  Serial.print(digitalRead(3));
   Serial.println(" ");
   int sturn = 0;
   str_pos = get_str_pos() - R1 - R2 / 2;

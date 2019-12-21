@@ -36,7 +36,10 @@ void setup()
 int sturn = 0;
 void loop()
 {
-  Serial.println(state);
+  Serial.print(state);
+  Serial.print(" ");
+  Serial.print(str_pos);
+  Serial.println(" ");
   int sturn = 0;
   is_limit_left = limit_left();
   is_limit_right = limit_right();
