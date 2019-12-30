@@ -95,14 +95,12 @@ void loop()
     case EXPECT_KNOK:
       {
         if (knok_on == 2)
-        {
+        {          
+          t = millis();
           state = ARD_OFF;
-          digitalWrite(LED_CMP_ON, 0);
-          digitalWrite(LED_PWR_ON, 0);
         }
         else if (knok_on == 3)
         {
-
           digitalWrite(LED_CMP_ON, 0);
           digitalWrite(LED_PWR_ON, 0);
           state = ALL_OFF;
@@ -131,7 +129,14 @@ void loop()
     case ARD_OFF:
       {
         digitalWrite(big_ard, 1);
-        state = INIT;
+        if (millis() - t > 31000)
+        {          
+          digitalWrite(LED_CMP_ON, 0);
+          digitalWrite(LED_PWR_ON, 0);
+          digitalWrite(rele_mass,  1);
+          digitalWrite(rele_cmp,   1);
+          state = INIT;
+        }        
         break;
       }
     case ALL_OFF:
