@@ -188,14 +188,17 @@ void loop()
   k =  1;
   ki = 1;
   dt = (millis() - t) / 1000.0; t = millis();
-  gyro.readGyro(&x, &y, &z);
+  //gyro.readGyro(&x, &y, &z);
   //Serial.println(x);
  // x -= 0.005025;
+ x = event.acceleration.y;
   SumX = SumX + x - Ax;
   Ax = SumX / n_A;
   e = Ax;
   Ix += ki * e * dt;
   Int_X = k * e + ki * Ix;
+  Serial.println(event.acceleration.y);
+  delay(100);
  // stp = max(min(Int_X, 15), -15);
  // stepperX.rotate(-stp);
   //Serial.print(Ax);
@@ -205,6 +208,7 @@ void loop()
   //Serial.print(Int_X);
   //Serial.print("\n");
   stp = 5;
+  /*
   Serial.println(event.acceleration.y);
   if(event.acceleration.y < -1.5)
   {
@@ -218,4 +222,6 @@ void loop()
   {
     stepperX.rotate(0);
   }
+  */
+  
 }

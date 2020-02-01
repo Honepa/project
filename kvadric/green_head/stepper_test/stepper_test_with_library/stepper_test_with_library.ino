@@ -2,7 +2,7 @@
 #include "BasicStepperDriver.h"
 
 #define MOTOR_STEPS 175
-#define RPM 100
+#define RPM 200
 
 #define MICROSTEPS 1
 
@@ -28,13 +28,14 @@ void setup()
 
 void loop() 
 {
- int stp = 30;
+ int stp = 90;
  //for (int i = 100; i < 250; i ++)
  //{
  //stepperX.begin(i, MICROSTEPS);
  stepperX.rotate(stp);
  delay(5);
- stepperX.rotate(-stp);
+ //stepperX.rotate(-stp);
+ while(1);
  //}
 
  /*
