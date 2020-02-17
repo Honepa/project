@@ -11,8 +11,8 @@
 
 #define EnaY 8
 #define EnbY 13
-Stepper stepperX (STEPS, 6, 5, 4, 3);
-Stepper stepperY (STEPS, 9, 10, 11, 12);
+Stepper stepperX (STEPS, 9, 10, 11, 12);
+Stepper stepperY (STEPS, 6, 5, 4, 3);
 
 Adafruit_ADXL345_Unified accel = Adafruit_ADXL345_Unified(12345);
 
@@ -70,10 +70,10 @@ void loop()
   
   t0 = millis();
   dt = (millis() - t) / 1000.0; t = millis();
-  ky = -0.5;
-  kiy = 0.0005;
-  kx = -0.5;
-  kix = 0.0005;
+  ky =  -1.0;
+  kiy = -0.01;
+  kx =  -1.2;
+  kix = 0;
   
   ay = getY();
   ax = getX();
@@ -86,20 +86,20 @@ void loop()
   ux = Px + Ix;
  
   Py = ky * ey;
-  Iy += kiy * ey;
+  Iy = kiy * ey;
   uy = Py + Iy;
 
-  Serial.print(ax);
-  Serial.print("\t");
   Serial.print(Px);
+  Serial.print("\t");
+  Serial.print(Ix);
   Serial.print("\t");
   Serial.print(ux);
   Serial.print("\t");
   //Serial.print(sign(ux));
   Serial.print("\t");
-  Serial.print(ay);
-  Serial.print("\t");
   Serial.print(Py);
+  Serial.print("\t");
+  Serial.print(Iy);
   Serial.print("\t");
   Serial.print(uy);
   Serial.print("\t");
