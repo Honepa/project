@@ -35,10 +35,10 @@ void setup()
  stepperX.setSpeed(30);
  stepperY.setSpeed(30);
  
- pinMode(EnaX, INPUT);
- pinMode(EnbX, INPUT);
- pinMode(EnaY, INPUT);
- pinMode(EnbY, INPUT);
+ pinMode(EnaX, OUTPUT);
+ pinMode(EnbX, OUTPUT);
+ pinMode(EnaY, OUTPUT);
+ pinMode(EnbY, OUTPUT);
  digitalWrite(EnaX, 1);
  digitalWrite(EnbX, 1);
  digitalWrite(EnaY, 1);
@@ -71,9 +71,9 @@ void loop()
   t0 = millis();
   dt = (millis() - t) / 1000.0; t = millis();
   ky =  -1.0;
-  kiy = -0.01;
-  kx =  -1.2;
-  kix = 0;
+  kiy = -0.0;
+  kx =  -1.0;
+  kix = -0.1;
   
   ay = getY();
   ax = getX();
@@ -82,7 +82,7 @@ void loop()
   ex = ax;
   
   Px = kx * ex;
-  Ix += kix * ex;
+  Ix = kix * ex;
   ux = Px + Ix;
  
   Py = ky * ey;
@@ -95,7 +95,7 @@ void loop()
   Serial.print("\t");
   Serial.print(ux);
   Serial.print("\t");
-  //Serial.print(sign(ux));
+//  Serial.print(sign(ux));
   Serial.print("\t");
   Serial.print(Py);
   Serial.print("\t");
@@ -103,7 +103,7 @@ void loop()
   Serial.print("\t");
   Serial.print(uy);
   Serial.print("\t");
-  //Serial.print(sign(uy));
+ // Serial.print(sign(uy));
   Serial.print("\t");
   Serial.print("\n");
 
