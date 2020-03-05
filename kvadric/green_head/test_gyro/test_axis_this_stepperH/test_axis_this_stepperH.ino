@@ -39,10 +39,14 @@ void setup()
  pinMode(EnbX, OUTPUT);
  pinMode(EnaY, OUTPUT);
  pinMode(EnbY, OUTPUT);
- digitalWrite(EnaX, 1);
- digitalWrite(EnbX, 1);
- digitalWrite(EnaY, 1);
- digitalWrite(EnbY, 1);
+ for(int i = 0; i < 220; i++)
+ {
+ analogWrite(EnaX, i);
+ analogWrite(EnbX, i);
+ analogWrite(EnaY, i);
+ analogWrite(EnbY, i);
+ }
+ 
 }
 
 float getY()
@@ -70,10 +74,10 @@ void loop()
   
   t0 = millis();
   dt = (millis() - t) / 1000.0; t = millis();
-  ky =  -1.0;
-  kiy = -0.0;
-  kx =  -1.0;
-  kix = -0.1;
+  ky =  -5;
+  kiy = -1;
+  kx =  -1.5;
+  kix = -0.5;
   
   ay = getY();
   ax = getX();
@@ -93,7 +97,7 @@ void loop()
   Serial.print("\t");
   Serial.print(Ix);
   Serial.print("\t");
-  Serial.print(ux);
+  Serial.print(-ux);
   Serial.print("\t");
 //  Serial.print(sign(ux));
   Serial.print("\t");
@@ -107,7 +111,7 @@ void loop()
   Serial.print("\t");
   Serial.print("\n");
 
-  stepperX.step(ux);
+  stepperX.step(-ux);
   stepperY.step(uy);
 }
 
