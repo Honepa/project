@@ -3,7 +3,7 @@ import sys
 from serial import Serial, SerialException
 
 PORTS = ['/dev/ttyUSB0', '/dev/ttyUSB1', '/dev/ttyUSB2', '/dev/ttyUSB3', '/dev/ttyUSB4']
-
+#arduino = Serial('/dev/ttyUSB0', 9600, timeout =10) 
 class FIND_ARDUINO():
     
     def __init__(self):
@@ -11,7 +11,7 @@ class FIND_ARDUINO():
         for port in PORTS:
             try:
                 print(port)
-                self.findport = Serial(port = port, baudrate = 115200, timeout = 2)
+                self.findport = Serial(port = port, baudrate = 9600, timeout = 2)
                 print(self.findport.readlines())
                 break
             except SerialException as e:
