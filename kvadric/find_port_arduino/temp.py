@@ -5,9 +5,9 @@ from serial import Serial, SerialException
 PORTS = ['/dev/ttyUSB0', '/dev/ttyUSB1', '/dev/ttyUSB2', '/dev/ttyUSB3', '/dev/ttyUSB4']
 
 class FIND_ARDUINO():
-    findport = None
     
     def __init__(self):
+        self.findport = None
         for port in PORTS:
             try:
                 print(port)
@@ -25,6 +25,8 @@ class FIND_ARDUINO():
         except AttributeError:
             print('nicht close', file = sys.stderr)
 
-  if __name__ == '__main__':
+if __name__ == '__main__':
     port_arduino = FIND_ARDUINO()
     del port_arduino
+    
+     
