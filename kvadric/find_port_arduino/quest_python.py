@@ -8,7 +8,7 @@ PORTS = ['/dev/ttyUSB0', '/dev/ttyUSB1', '/dev/ttyUSB2', '/dev/ttyUSB3', '/dev/t
 class Arduino():
     
     def __init__(self, **kwargs):
-        self.findport = None
+        self.port = None
         
         for port in PORTS:
             try:
@@ -27,7 +27,7 @@ class Arduino():
                     break
                 
             except SerialException as e:
-                pass
+                print(port, 'failed')
             
         if self.port == None:
             raise SerialException('Port is not found')
