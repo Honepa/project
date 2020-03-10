@@ -41,7 +41,7 @@ if __name__ == '__main__':
     left = Arduino(1)
     right = Arduino(2)
     print('L=%s\nR=%s' % (left,right))
-    #print(arduino.port.readline())    
+    #print(left.port.readline())    
     del left, right
 
     
