@@ -13,25 +13,24 @@ code.close()
 #export FLASK_APP=text_fl.py
 #flask run --host 0.0.0.0 --port 8080 
 from flask import Flask, render_template, request
-import os
+#import os
+import subprocess
 app = Flask(__name__)
-
-code = open("code.py", "w")
-code.write("print('Hello World!')")
-datapy = open("code.py", "r")
 
 @app.route('/')
 def index():
-    return render_template('index.html', cod = datapy)
+    return render_template('index.html')
 
 @app.route('/submit', methods=['POST'])
 def submit():
-    code.write(request.form['text'])
-
-    #p = []
-    #p = os.popen("./run_py.sh")
-    #data = open("out", "r" ).read()    
-    return render_template('index.html', cod = datapy, out = datapy)
+    code = open('code.py', "w")
+    innin = request.form['text']
+    code.write(innin)
+    code.close()
+    subprocess.Popen(['bash', 'run_py.sh'])
+    outin = open('out', "r").read()
+    #outin.close()
+    return render_template('index.html', out = outin)
 
 if __name__ == '__main__':
     app.run()
