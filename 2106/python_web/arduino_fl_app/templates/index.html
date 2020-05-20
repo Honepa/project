@@ -1,0 +1,26 @@
+<html>
+    <head>
+        <title> 2106: Arduino CHEK </title>
+    </head>
+    <body>
+        <h1>Arduino kod </h1>
+        <form action="/submit" id="textform" method="post">
+            <textarea name="text" cols="40" wrap="hard">{{cod}}</textarea>
+		 <input type="submit" value="Run Arduino"> 
+        
+            <p><select name ="plates">
+             <option selected="selected">Chose ardoino</option>
+             <option value="Nano">Arduino Nano</option>
+             <option value="Mega">Arduino Mega</option>
+             <option value="Uno">Arduino Uno</option>
+            </select></p>
+            <p><select name="PORT">
+             <option selected="selected">Chose port</option>
+             <option value="port1">port1</option>
+             <option value="port2">{{port2}}</option>
+             <option value="port3">{{port3}}</option>
+             <option value="port4">port4</option>
+            </select></p>
+        </form>
+    </body>
+</html>
