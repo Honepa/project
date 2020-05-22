@@ -5,9 +5,6 @@
     <body>
         <h1>Arduino kod </h1>
         <form action="/submit" id="textform" method="post">
-            <textarea name="text" cols="40" wrap="hard">{{cod}}</textarea>
-		 <input type="submit" value="Run Arduino"> 
-        
             <p><select name ="plates">
              <option selected="selected">Chose ardoino</option>
              <option value="Nano">Arduino Nano</option>
@@ -21,6 +18,14 @@
              <option value="port3">{{port3}}</option>
              <option value="port4">port4</option>
             </select></p>
+            <textarea name="text" cols="40" wrap="hard">{{cod}}</textarea>
+		 <input type="submit" value="Run Arduino"> 
         </form>
+        <p>{{term_out}}</p>
+        <form action="/serial_cod" id="textform" method="post">
+            <textarea name="serial_text" cols="40" wrap="hard">{{serial_cod}}</textarea>
+            <input type="submit" value="Run serial">
+        </form>
+        <p>{{serial_out}}</p>
     </body>
 </html>
