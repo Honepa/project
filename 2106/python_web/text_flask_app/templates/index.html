@@ -3,12 +3,21 @@
 		<title>2106: Python CHEK</title>
 		<link rel="shortcut icon" href="favicon_car.png" type="image/png">
 	</head>
+    <style>
+        body{
+         background-color: #4bb9d4;
+        }
+    </style>
+   
 	<body>
+
 		<h1>Введите код на Python</h1>
 		<form action="submit" id="textform" method="post">
-			<textarea name="text" cols="40" wrap="hard">{{cod}}</textarea>
+			<p contenteditable = "true" name="text">print("hi")</p>
 			<input type="submit" value="Run Python"> 
 		</form>
 		<p>{{out}}</p>
-	</body>
+    <p contenteditable = "true"> your text </p> 	
+    </body>
+     <script src="script.js"></script>
 </html>
