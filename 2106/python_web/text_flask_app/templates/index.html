@@ -1,14 +1,14 @@
 <html>
 	<head>
 		<title>2106: Python CHEK</title>
-		<link rel="shortcut icon" href="favicon_car.png" type="image/png">
-	</head>
+		<link rel="shortcut icon" href="{{url_for('static', filename='favicon_car.png')}}" type="image/png">
     <style>
         body{
          background-color: #4bb9d4;
         }
     </style>
-   
+    <script src="{{url_for('static', filename='script.js')}}"></script>
+    </head>
 	<body>
 
 		<h1>Введите код на Python</h1>
@@ -19,5 +19,4 @@
 		<p>{{out}}</p>
     <p contenteditable = "true"> your text </p> 	
     </body>
-     <script src="script.js"></script>
 </html>
