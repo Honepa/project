@@ -1,4 +1,4 @@
-var id_button = {
+var state = {
     forward : 0,
     back    : 0,
     right   : 0,
@@ -7,73 +7,79 @@ var id_button = {
     stop    : 0,
     speed   : 0,
     };
+    
 let timer_id = setInterval(fl_drive, 500);
 function fl_drive(){
+    console.log(state),
     $.ajax({
-        type: "POST",
-        url: "/",
-        data: id_button,
-        
-    });
+            url: '/state',
+            type: "POST",
+            data: state,
+            success: function(response) {
+                console.log(response);
+            },
+            error: function(error) {
+                    console.log(error);
+                }
+});
 };    
 $(window).on('mouseup', function(){
-    id_button.forward = 0;
-    alert(id_button.forward);
+    state.forward = 0;
+    state.back    = 0;
+    state.left    = 0;
+    state.right   = 0;
 });
 
 document.getElementById("forward").addEventListener("mousedown", function(){
-    id_button.forward = 1;
-    id_button.back    = 0;
-    id_button.left    = 0;
-    id_button.right   = 0;
-    id_button.on_line = 0;
-    id_button.stop    = 0;
+    state.forward = 1;
+    state.back    = 0;
+    state.left    = 0;
+    state.right   = 0;
+    state.on_line = 0;
+    state.stop    = 0;
     
 });
 document.getElementById("back").addEventListener("mousedown", function(){
-    id_button.forward = 0;
-    id_button.back    = 1;
-    id_button.left    = 0;
-    id_button.right   = 0;
-    id_button.on_line = 0;
-    id_button.stop    = 0;
-    alert("back");
+    state.forward = 0;
+    state.back    = 1;
+    state.left    = 0;
+    state.right   = 0;
+    state.on_line = 0;
+    state.stop    = 0;
 });
 document.getElementById("left").addEventListener("mousedown", function(){
-    id_button.forward = 0;
-    id_button.back    = 0;
-    id_button.left    = 1;
-    id_button.right   = 0;
-    id_button.on_line = 0;
-    id_button.stop    = 0;
-    alert("left");
+    state.forward = 0;
+    state.back    = 0;
+    state.left    = 1;
+    state.right   = 0;
+    state.on_line = 0;
+    state.stop    = 0;
 });
 document.getElementById("right").addEventListener("mousedown", function(){
-    id_button.forward = 0;
-    id_button.back    = 0;
-    id_button.left    = 0;
-    id_button.right   = 1;
-    id_button.on_line = 0;
-    id_button.stop    = 0;
-    alert("right");
+    state.forward = 0;
+    state.back    = 0;
+    state.left    = 0;
+    state.right   = 1;
+    state.on_line = 0;
+    state.stop    = 0;
 });
 document.getElementById("on_line").addEventListener("mousedown", function(){
-    id_button.forward = 0;
-    id_button.back    = 0;
-    id_button.left    = 0;
-    id_button.right   = 0;
-    id_button.on_line = 1;
-    id_button.stop    = 0;
-    alert("line");
+    state.forward = 0;
+    state.back    = 0;
+    state.left    = 0;
+    state.right   = 0;
+    state.on_line = 1;
+    state.stop    = 0;
 });
 document.getElementById("stop").addEventListener("mousedown", function(){
-    id_button.speed = 0;
-    id_button.stop    = 1;
-    alert("stop");
+    state.forward = 0;
+    state.back    = 0;
+    state.left    = 0;
+    state.right   = 0;
+    state.on_line = 0;
+    state.stop    = 1;
 });
       
 document.getElementById("speed").addEventListener("click", function() {
-    id_button.speed=this.value;
-    this.value = id_button.speed;
-    alert(id_button.speed);
+    state.speed=this.value;
 });
