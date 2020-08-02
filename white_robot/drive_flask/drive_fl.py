@@ -23,6 +23,7 @@ class Arduino():
                 #print(port)
                 self.port = Serial(port = port, baudrate = 9600, timeout = 2)
                 #print(self.port.readlines())
+                self.port.write(b'0000')
                 b = self.port.read()
                 
                 
@@ -40,16 +41,12 @@ class Arduino():
         try:
             self.port.close()
         except AttributeError:
-            print('nicht close', file = sys.stderr)
-    def __connect__(self):
-        try:
-            self.port.write(b'1')
-            
+            print('nicht close', file = sys.stderr)        
 
     def __str__(self):
         return str(self.port)
 
-arduino_due = Arduino(1)
+arduino_due = Arduino(0)
 
 app = Flask(__name__)
 
@@ -60,21 +57,49 @@ def index(**qwargs):
 @app.route('/state', methods=['GET','POST'])
 def drive_mod(**qwargs):
     state = request.form
-    print(arduino_due)
     speed = state.get('speed')
     print(state.get('speed'))
     if state.get('forward') == "1":
+        arduino_due.port.write(b'0')
+        arduino_due.port.write(b'0')
+        arduino_due.port.write(b'1')
+        arduino_due.port.write(b,speed)
+        arduino_due.port.write(b'0')
         print("go forward", speed)
-        arduino_due.port.write(b'2')
     elif state.get('back') == "1":
+        arduino_due.port.write(b'0')
+        arduino_due.port.write(b'0')
+        arduino_due.port.write(b'2')
+        arduino_due.port.write(b,speed)
+        arduino_due.port.write(b'0')
         print("go back", speed)
     elif state.get('left') == "1":
+        arduino_due.port.write(b'0')
+        arduino_due.port.write(b'0')
+        arduino_due.port.write(b'3')
+        arduino_due.port.write(b,speed)
+        arduino_due.port.write(b'0')
         print("go left", speed)
     elif state.get('right') == "1":
+        arduino_due.port.write(b'0')
+        arduino_due.port.write(b'0')
+        arduino_due.port.write(b'4')
+        arduino_due.port.write(b,speed)
+        arduino_due.port.write(b'0')
         print("go right", speed)
     elif state.get('on_line') == "1":
+        arduino_due.port.write(b'0')
+        arduino_due.port.write(b'0')
+        arduino_due.port.write(b'5')
+        arduino_due.port.write(b,speed)
+        arduino_due.port.write(b'0')
         print("go of line", speed)
     elif state.get('stop') == "1":
+        arduino_due.port.write(b'0')
+        arduino_due.port.write(b'0')
+        arduino_due.port.write(b'6')
+        arduino_due.port.write(b,speed)
+        arduino_due.port.write(b'0')
         print("stop!!!", speed)
     else:
         print("wait")
