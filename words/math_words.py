@@ -2,13 +2,12 @@ from num2words import num2words
 
 saved_num = []
 
-def count_space(num) :
+def count_space(word) :
     counter = 0
-    n = num
-    while n:
-        counter += 1
-        n //= 10
-    return counter - 1
+    for i in range(len(word)):
+        if word[i] == " ":
+            counter += 1
+    return counter
 
 def save_num(num) :
     if len(saved_num) <= 8 :
@@ -36,7 +35,7 @@ def chek_recur():
 
 def words_and_words(num): 
    word = num2words(num, lang='ru')
-   new_num = len(word) - count_space(num)
+   new_num = len(word) - count_space(word)
    save_num(new_num)
    print(word + " " + str(new_num))
    if chek_recur():
@@ -45,5 +44,5 @@ def words_and_words(num):
        words_and_words(new_num)
    
 if __name__ == '__main__':
-    words_and_words(12546)
+    words_and_words(23)
     print(saved_num)
